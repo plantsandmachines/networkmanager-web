@@ -1,0 +1,18 @@
+doctype html5
+html(ng-app="robotron")
+  head
+    - var title = pageTitle || "networking test"
+    title #{title}
+    include includes/layouts/stylesheets
+    include includes/layouts/icon_sets
+    include includes/layouts/javascripts
+  body
+    include includes/layouts/header_nav
+
+    block content
+      .container
+        .row  
+  footer
+    block scripts
+
+

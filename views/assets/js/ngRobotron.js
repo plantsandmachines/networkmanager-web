@@ -1,0 +1,1 @@
+var roboApp = angular.module('robotron', []);

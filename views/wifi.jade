@@ -1,0 +1,125 @@
+extends layout
+
+block content
+  .container(ng-controller="wifiCtrl")
+    section.content
+      h1 Networking
+      div(role="tabpanel")
+        ul.nav.nav-tabs(role='tablist')
+          li.active(role="presentation")
+            a(href="#networks", aria-controls="Networks", role="tab", data-toggle="tab") Found Networks
+          li(role="presentation")
+            a(href="#connections", aria-controls="Saved Connections", role="tab", data-toggle="tab") Saved Connections
+
+      .tab-content
+        #networks.tab-pane.active(role='tabpanel')
+          table.table.table-hover
+            thead
+              tr
+                th Strengh
+                th Name
+                th Encryption
+                th
+            tbody
+              tr(ng-repeat="(id,network) in networks | orderBy:'-Strength'")
+                td(scope="row") {{network.Strength}}
+                td {{network.Ssid}}
+                td {{network.connection['802-11-wireless-security']['key-mgmt'] || 'none' }}
+                td
+                  div(ng-show="!network.state || network.state == 'default'")
+                    button.btn.btn-default(ng-click="setDetails(network)") show Details
+                    button.btn.btn-success(ng-show="!network.needsSecrets", ng-click="connectToMatch(network)") Connect
+                    button.btn.btn-warning(ng-show="network.needsSecrets && network.connection['802-11-wireless-security']['key-mgmt'] != 'unhandled'", ng-click="switchState(network,'getSecret')") Connect
+                  .form-group(ng-show="network.state == 'getSecret'")
+                    input.form-control(type="text", placeholder="Password", ng-model="network.connection['802-11-wireless-security']['psk']")
+                    button.btn.btn-danger(ng-click="switchState(network,'default')") Abort
+                    button.btn.btn-success(ng-click="connectToMatch(network)") Connect
+          .details(ng-show="networkDetails")
+            ul
+              li(ng-repeat="(name,detail) in networkDetails") {{name}}: {{detail}}
+
+        #connections.tab-pane(role='tabpanel')
+          .container
+            .row
+              .col-md-4
+                ul.list-group
+                  li.list-group-item(ng-repeat="(id,connection) in connections",ng-show="connection['802-11-wireless']")
+                    a(ng-click="setConnectionDetails(connection)") {{connection.connection.id}}
+              .col-md-7.col-md-offset-1
+                form.details.form-horizontal(ng-if="connectionDetails")
+                  .form-group(ng-if="connectionDetails['connection']")
+                    .row
+                      h3 Connection
+                    .form-group
+                      label.control-label.col-xs-2 Id
+                      .col-xs-10
+                        span.form-control {{connectionDetails['connection']['id']}}
+                    .form-group
+                      label.control-label.col-xs-2 Last use
+                      .col-xs-10
+                        span.form-control {{ connectionDetails['connection']['timestamp'] * 1000 | date:'yyyy-MM-dd HH:mm:ss Z' }}
+                  .form-group(ng-if="connectionDetails['802-11-wireless']")
+                    .row
+                      h3 Wireless Details
+                    .form-group
+                      label.control-label.col-xs-2 SSID
+                      .col-xs-10
+                        span.form-control {{connectionDetails['802-11-wireless']['ssid']}}
+                    .form-group
+                      label.control-label.col-xs-2(ng-class="getClasses('mode')") Mode
+                      .col-xs-10
+                        select.form-control(ng-model="connectionDetails['802-11-wireless']['mode']", ng-change="hasChanged(connectionDetails, 'mode')")
+                          option infrastructure
+                          option adhoc
+                          option ap
+                    .form-group
+                      label.control-label.col-xs-2(ng-class="getClasses('key-mgmt')") Security
+                      .col-xs-10
+                        select.form-control(ng-model="connectionDetails['802-11-wireless-security']['key-mgmt']", ng-change="hasChanged(connectionDetails, 'key-mgmt')")
+                          option(value="") none
+                          option(value="none") no key management
+                          option(value="ieee8021x") ieee8021x
+                          option(value="wpa-none") wpa-none
+                          option(value="wpa-psk") wpa-psk
+                          option(value="wpa-eap") wpa-eap
+                    .form-group(ng-if="connectionDetails['802-11-wireless-security']['key-mgmt'] == 'wpa-psk'")
+                      label.control-label.col-xs-2(ng-class="getClasses('psk')") Password
+                      .col-xs-10
+                        input.form-control(type='text', ng-if="connectionDetails['802-11-wireless-security']['psk'] != null", ng-model="connectionDetails['802-11-wireless-security']['psk']", ng-change="hasChanged(connectionDetails, 'psk')")
+                        button.btn.btn-default(ng-click="getSecrets(connectionDetails)", ng-if="connectionDetails['802-11-wireless-security']['psk'] == null") Show password
+
+                    .row
+                      button#btn-update.btn.btn-warning(ng-if="connectionDetails.angular.hasChanged", ng-click="updateConnection(connectionDetails)") Save changes
+                  //.form-group(ng-if="connectionDetails['802-11-wireless']['security'] == '802-11-wireless-security'")
+                  //  .form-group
+                  //    label.control-label.col-xs-2 Algorithm
+                  //    .col-xs-10
+                  //      select.form-control(ng-model="connectionDetails['802-11-wireless-security']['auth-alg']")
+                  //        option none
+                  //        option ieee8021x
+                  //        option open
+                  //        option shared
+                  //        option leap
+                  //  .form-group
+                  //    label.control-label.col-xs-2 Key Management
+                  //    .col-xs-10
+                  //      select.form-control(ng-model="connectionDetails['802-11-wireless-security']['key-mgmt']")
+                  //        option none
+                  //        option ieee8021x
+                  //        option wpa-none
+                  //        option wpa-psk
+                  //        option wpa-eap
+
+
+                  //div(ng-repeat="(title,category) in connectionDetails", ng-if="isIteratable(category)")
+                  //  .row
+                  //    h3 {{title}}
+                  //
+                  //  .form-group(ng-repeat="(name, value) in category")
+                  //    label.control-label.col-xs-2 {{name}}
+                  //    .col-xs-10
+                  //      input.form-control(ng-model='value')
+
+block scripts
+  script(src="/assets/js/ngWifi.js")
+

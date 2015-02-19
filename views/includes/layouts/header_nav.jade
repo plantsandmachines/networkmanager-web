@@ -1,0 +1,30 @@
+header.navbar.navbar-default.navbar-fixed-top(role="navigation")
+  .container
+    .navbar-header
+      button.navbar-toggle(data-toggle="collapse", data-target=".navbar-collapse")
+        span.sr-only
+        span.icon-bar
+        span.icon-bar
+        span.icon-bar
+      .navbar-brand.asciibot
+        span.sr-only growbot
+        #asciibot.monofont
+    .navbar-collapse.collapse
+      if user
+        ul.nav.navbar-nav
+          li
+            a(href="/inventory")
+              span.sr-only gardens
+              i.fa.fa-bars.fa-2x
+          li
+            a(href="/inventory/life")
+              span.sr-only lifeforms
+              i.fa.fa-heart.fa-2x
+          li
+            a(href="/bot/setup")
+              span.sr-only machines
+              i.fa.fa-cog.fa-2x
+
+
+
+    // section.login
